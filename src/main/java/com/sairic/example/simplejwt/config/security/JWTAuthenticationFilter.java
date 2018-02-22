@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 
+import static com.sairic.example.simplejwt.config.security.SecurityEnum.AuthHeader;
+import static com.sairic.example.simplejwt.config.security.SecurityEnum.Bearer;
+import static com.sairic.example.simplejwt.config.security.SecurityEnum.PasswordHeader;
+import static com.sairic.example.simplejwt.config.security.SecurityEnum.UserNameHeader;
+
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
@@ -24,8 +29,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest req,
                                                 HttpServletResponse res) throws AuthenticationException {
-        String username = req.getHeader("X-VC-Auth-Username");
-        String password = req.getHeader("X-VC-Auth-Password");
+        String username = req.getHeader(UserNameHeader.val());
+        String password = req.getHeader(PasswordHeader.val());
         return authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password, new ArrayList<>())
         );
@@ -36,8 +41,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) {
-        String token = keyService.generateJWT( ((User) auth.getPrincipal()).getUsername()  );
-        res.addHeader("Authorization", "Bearer " + token);
+        JWTUser user = (JWTUser) auth.getPrincipal();
+        String token = keyService.generateJWT(user);
+        res.addHeader(AuthHeader.val(), Bearer.val() + token);
     }
 
 

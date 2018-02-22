@@ -3,9 +3,7 @@ package com.sairic.example.simplejwt.config.security;
 import com.sairic.example.simplejwt.service.KeyService;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -14,7 +12,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
+
+import static com.sairic.example.simplejwt.config.security.SecurityEnum.AuthHeader;
+import static com.sairic.example.simplejwt.config.security.SecurityEnum.Bearer;
 
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
@@ -29,25 +29,23 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest req,
                                     HttpServletResponse res,
                                     FilterChain chain) throws IOException, ServletException {
-        String header = req.getHeader("Authorization");
+        String header = req.getHeader(AuthHeader.val());
 
 
-        if (header == null || !header.startsWith("Bearer ")) {
+        if (header == null || !header.startsWith(Bearer.val())) {
             chain.doFilter(req, res);
             return;
         }
-        UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
+        JWTAuthenticationToken authentication = getAuthentication(req);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         chain.doFilter(req, res);
     }
-    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
-        String auth = request.getHeader("Authorization");
+
+    private JWTAuthenticationToken getAuthentication(HttpServletRequest request) {
+        String auth = request.getHeader(AuthHeader.val());
         try {
-            Jwt token = keyService.parseAuthorization(auth.replace("Bearer ", ""));
-            DefaultClaims claims = (DefaultClaims) token.getBody();
-            String subject = (String) claims.get("sub");
-            String customClaimValue = (String) claims.get("customClaim");
-            return new UsernamePasswordAuthenticationToken("sairic", null, new ArrayList<>());
+            Jwt token = keyService.parseAuthorization(auth.replace(Bearer.val(), ""));
+            return new JWTAuthenticationToken(token);
         } catch(JwtException jwte) {
             return null;
         }

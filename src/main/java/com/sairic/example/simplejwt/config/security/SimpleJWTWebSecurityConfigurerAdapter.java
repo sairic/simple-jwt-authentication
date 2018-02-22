@@ -1,4 +1,4 @@
-package com.sairic.example.simplejwt.config;
+package com.sairic.example.simplejwt.config.security;
 
 import com.sairic.example.simplejwt.config.security.JWTAuthenticationFilter;
 import com.sairic.example.simplejwt.config.security.JWTAuthorizationFilter;
@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
@@ -30,7 +31,10 @@ public class SimpleJWTWebSecurityConfigurerAdapter extends WebSecurityConfigurer
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().authorizeRequests()
+        http.csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager(), keyService))
