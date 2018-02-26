@@ -21,7 +21,7 @@ public class SimpleJWTController {
     public LoggedInUser getMyDetails() {
         JWTAuthenticationToken token = (JWTAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         Collection<GrantedAuthority> authorities = token.getAuthorities();
-        List<String> rolesList = authorities.stream().map(grantedAuthority -> grantedAuthority.getAuthority()).collect(Collectors.toList());
+        List<String> rolesList = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
         return new LoggedInUser((String) token.getPrincipal(), token.getCustomClaims(), rolesList);
     }
 
@@ -32,6 +32,7 @@ public class SimpleJWTController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/userdetails")
     public void getAllUsersDetails() {
-        // For this example, this function will never be used.
+        // For this example, this function will never be used because the security framework will prevent
+        // access to anything here.
     }
 }
